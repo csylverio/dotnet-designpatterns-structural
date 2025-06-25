@@ -1,0 +1,74 @@
+using Microsoft.AspNetCore.Mvc;
+using WebDesignPattern.Api.DTOs;
+using WebDesignPattern.Domain.PurchaseTransaction;
+
+namespace WebDesignPattern.Api.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class OrderController : ControllerBase
+{
+    private readonly IOrderService _orderService;
+    private readonly IOrderBuilder _orderBuilder;
+
+    public OrderController(IOrderService orderService, IOrderBuilder orderBuilder)
+    {
+        _orderService = orderService;
+        _orderBuilder = orderBuilder;
+    }
+
+    [HttpPost]
+    public IActionResult Create([FromBody] OrderDTO orderDTO)
+    {
+        IOrderBuilder orderBuilder = _orderBuilder
+            .SetCustomerId(orderDTO.CustomerId)
+            .SetPaymentMethod(orderDTO.PaymentMethodId)
+            .SetShippingMethod(orderDTO.ShippingMethodId)
+            .SetDiscount(orderDTO.Discount);
+
+        foreach (var item in orderDTO.Items)
+        {
+            orderBuilder.AddItem(item.ProductId, item.Quantity);
+        }
+
+        Order order = orderBuilder.Build();
+        order = _orderService.Create(order);
+
+        return Ok(new
+        {
+            Id = order.Id,
+            TotalAmount = order.TotalAmount
+        });
+    }
+
+    [HttpPost("finalize-order")]
+    public IActionResult FinalizeOrder([FromBody] FinalizeOrderDTO finalizeOrderDTO)
+    {
+
+        return Ok();
+    }
+
+
+    [HttpPost("make-payment")]
+    public IActionResult MakePayment([FromBody] PaymentDTO paymentDTO)
+    {
+        var order = _orderService.GetById(paymentDTO.OrderId);
+        if (order == null)
+            return NotFound("Pedido não encontrado.");
+
+        // TODO: COMO VALIDAR INPUTS?
+        // Poderia ter um método de entrada para cada tipo???
+        try
+        {
+            var paymentResult = _orderService.MakePayment(order, paymentDTO.PaymentMethodId);
+            if (paymentResult.Success)
+                return Ok(paymentResult); // HTTP 200 com detalhes do pagamento
+            else
+                return BadRequest(paymentResult); // HTTP 400 com erro
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+}
