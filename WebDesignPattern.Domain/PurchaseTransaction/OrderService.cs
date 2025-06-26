@@ -11,14 +11,17 @@ public class OrderService : IOrderService
     private readonly IPaymentRepository _paymentRepository;
     private readonly IPaymentGatewayFactory _paymentGatewayFactory;
     private readonly IDiscountConfiguration _discountConfiguration;
+    private readonly IAccountingService _accountingService;
 
     public OrderService(IOrderRepository orderRepository, IPaymentRepository paymentRepository,
-        IPaymentGatewayFactory paymentGatewayFactory, IDiscountConfiguration discountConfiguration)
+        IPaymentGatewayFactory paymentGatewayFactory, IDiscountConfiguration discountConfiguration,
+        IAccountingService accountingService)
     {
         _orderRepository = orderRepository;
         _paymentRepository = paymentRepository;
         _paymentGatewayFactory = paymentGatewayFactory;
         _discountConfiguration = discountConfiguration;
+        _accountingService = accountingService;
     }
 
     public Order GetById(int orderId)
@@ -35,6 +38,10 @@ public class OrderService : IOrderService
 
     public Order FinalizeOrder(Order order, string? couponCode = null)
     {
+        // --------------------------------------------------------------
+        // 1. Processa Desconto na plataforma utilizando composite
+        // --------------------------------------------------------------
+
         // Composite de descontos básicos (sempre aplicados)
         var baseDiscounts = new BaseDiscountsComposite();
 
@@ -83,6 +90,28 @@ public class OrderService : IOrderService
             FinalDiscount = totalDiscount
         };
 
+
+        // --------------------------------------------------------------
+        // 2. Registra na contabilidade usando o Facade
+        // --------------------------------------------------------------
+        var accountingResult = _accountingService.RegisterSale(order);
+
+        if (accountingResult.Success)
+        {
+            order.AccountingStatus = AccountingStatus.Registered;
+            order.AccountingDocument = accountingResult.DocumentNumber;
+            order.AccountingDate = accountingResult.AccountingDate;
+        }
+        else
+        {
+            // Pode-se optar por lançar exceção ou apenas registrar o erro
+            order.AccountingStatus = AccountingStatus.Error;
+            order.AccountingMessage = accountingResult.Message;            
+        }
+
+        // --------------------------------------------------------------
+        // 3. Atualiza o pedido com detalhes de desconto e status contábil 
+        // --------------------------------------------------------------
         _orderRepository.Update(order);
 
         return order;

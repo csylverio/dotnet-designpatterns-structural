@@ -26,7 +26,7 @@ public class PayPalApi
     {
         Console.WriteLine($"[PayPal] Pagamento de ${transaction.Value} enviado com sucesso para transação: {transaction.Id}.");
 
-        transaction.Status = "paid";
+        transaction.Status = "OK";
         transaction.Response = "raw_response";
         transaction.Url = "https://www.google.com";
 

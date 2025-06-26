@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDesignPattern.Domain", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDesignPattern.Infra", "WebDesignPattern.Infra\WebDesignPattern.Infra.csproj", "{63AEF9DA-A5A9-4BC4-B7B3-2140871EFB40}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryExternal.SAP", "LibraryExternal.SAP\LibraryExternal.SAP.csproj", "{7438738E-23F6-4E62-934D-3BEA85030257}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{63AEF9DA-A5A9-4BC4-B7B3-2140871EFB40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63AEF9DA-A5A9-4BC4-B7B3-2140871EFB40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63AEF9DA-A5A9-4BC4-B7B3-2140871EFB40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7438738E-23F6-4E62-934D-3BEA85030257}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7438738E-23F6-4E62-934D-3BEA85030257}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7438738E-23F6-4E62-934D-3BEA85030257}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7438738E-23F6-4E62-934D-3BEA85030257}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

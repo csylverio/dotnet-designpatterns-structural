@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../LibraryExternal.SAP/LibraryExternal.SAP.csproj" />
     <ProjectReference Include="../WebDesignPattern.Domain/WebDesignPattern.Domain.csproj" />
   </ItemGroup>
 

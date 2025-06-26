@@ -39,4 +39,9 @@ public class Order
     // Relacionamento com pagamentos (1 Order → N Payments para casos de retentativa)
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     public DiscountDetail DiscountDetail { get; internal set; }
+
+    public AccountingStatus AccountingStatus { get; set; }
+    public string AccountingDocument { get; set; }
+    public DateTime? AccountingDate { get; set; }
+    public string AccountingMessage { get; set; }
 }

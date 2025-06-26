@@ -1,3 +1,4 @@
+using LibraryExternal.SAP;
 using Microsoft.OpenApi.Models;
 using WebDesignPattern.Domain.CustomerRelationshipManagement;
 using WebDesignPattern.Domain.InventoryManagement;
@@ -8,6 +9,7 @@ using WebDesignPattern.Infra.Data;
 using WebDesignPattern.Infra.Financial;
 using WebDesignPattern.Infra.Financial.PagSeguro;
 using WebDesignPattern.Infra.Financial.PayPal;
+using WebDesignPattern.Infra.Sap;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,10 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 builder.Services.AddSingleton<IDiscountConfiguration, DiscountConfiguration>();
 
+builder.Services.AddScoped<IAccountingService, SapAccountingFacade>();
+builder.Services.AddScoped<ISapBapiService, SapBapiService>();
+builder.Services.AddScoped<ISapIdocService, SapIdocService>();
+builder.Services.AddScoped<ISapRfcService, SapRfcService>();
 
 var app = builder.Build();
 
