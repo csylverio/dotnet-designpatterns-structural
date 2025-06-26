@@ -1,5 +1,6 @@
 using System;
 using WebDesignPattern.Domain.CustomerRelationshipManagement;
+using WebDesignPattern.Domain.PurchaseTransaction.Discount;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
 
 namespace WebDesignPattern.Domain.PurchaseTransaction;
@@ -18,7 +19,9 @@ public class Order
     }
 
     public int Id { get; set; }
-    public Customer? Customer { get; private set; }
+
+    public int CustomerId { get; set; }
+    public Customer Customer { get; set; }
     public DateTime OrderDate { get; set; } = DateTime.Now;
     public OrderStatus Status { get; set; } = OrderStatus.Draft;
 
@@ -35,9 +38,5 @@ public class Order
 
     // Relacionamento com pagamentos (1 Order → N Payments para casos de retentativa)
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
-
-    internal void MarkAsPaid(string transactionId)
-    {
-        throw new NotImplementedException();
-    }
+    public DiscountDetail DiscountDetail { get; internal set; }
 }

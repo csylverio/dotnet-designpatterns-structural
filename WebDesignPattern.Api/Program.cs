@@ -2,6 +2,7 @@ using Microsoft.OpenApi.Models;
 using WebDesignPattern.Domain.CustomerRelationshipManagement;
 using WebDesignPattern.Domain.InventoryManagement;
 using WebDesignPattern.Domain.PurchaseTransaction;
+using WebDesignPattern.Domain.PurchaseTransaction.Discount;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
 using WebDesignPattern.Infra.Data;
 using WebDesignPattern.Infra.Financial;
@@ -33,6 +34,8 @@ builder.Services.AddScoped<PayPalApi>();
 builder.Services.AddScoped<PagSeguroService>();
 builder.Services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+
+builder.Services.AddSingleton<IDiscountConfiguration, DiscountConfiguration>();
 
 
 var app = builder.Build();

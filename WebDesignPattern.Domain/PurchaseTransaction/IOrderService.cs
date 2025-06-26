@@ -4,7 +4,8 @@ namespace WebDesignPattern.Domain.PurchaseTransaction;
 
 public interface IOrderService
 {
-    Order Create(Order order);
     Order GetById(int orderId);
+    Order Create(Order order);
     PaymentResult MakePayment(Order order, int paymentMethodId);
+    Order FinalizeOrder(Order order, string? couponCode);
 }

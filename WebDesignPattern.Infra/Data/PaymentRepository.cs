@@ -7,6 +7,6 @@ public class PaymentRepository : IPaymentRepository
 {
     public void Add(Payment payment)
     {
-        throw new NotImplementedException();
+        Console.WriteLine("PaymentRepository.Add");
     }
 }

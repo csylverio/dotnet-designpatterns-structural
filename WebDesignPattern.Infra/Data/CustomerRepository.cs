@@ -8,9 +8,6 @@ public class CustomerRepository : ICustomerRepository
     public Customer GetById(int customerId)
     {
         Console.WriteLine("CustomerRepository.GetById");
-        return new Customer()
-        {
-            Id = customerId
-        };
+        return OrderFakerGenerator.CustomerFaker;
     }
 }

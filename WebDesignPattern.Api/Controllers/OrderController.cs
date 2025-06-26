@@ -44,8 +44,25 @@ public class OrderController : ControllerBase
     [HttpPost("finalize-order")]
     public IActionResult FinalizeOrder([FromBody] FinalizeOrderDTO finalizeOrderDTO)
     {
+        var order = _orderService.GetById(finalizeOrderDTO.OrderId);
+        if (order == null)
+            return NotFound("Pedido não encontrado.");
 
-        return Ok();
+        try
+        {
+            order = _orderService.FinalizeOrder(order, finalizeOrderDTO.CouponCode);
+            return Ok(new
+            {
+                Id = order.Id,
+                BaseDiscount = order.DiscountDetail.BaseDiscount,
+                PromotionalDiscount = order.DiscountDetail.PromotionalDiscount,
+                FinalDiscount = order.DiscountDetail.FinalDiscount
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
 
@@ -56,8 +73,6 @@ public class OrderController : ControllerBase
         if (order == null)
             return NotFound("Pedido não encontrado.");
 
-        // TODO: COMO VALIDAR INPUTS?
-        // Poderia ter um método de entrada para cada tipo???
         try
         {
             var paymentResult = _orderService.MakePayment(order, paymentDTO.PaymentMethodId);

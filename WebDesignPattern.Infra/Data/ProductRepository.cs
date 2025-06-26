@@ -8,9 +8,6 @@ public class ProductRepository : IProductRepository
     public Product GetById(int productId)
     {
         Console.WriteLine("ProductRepository.GetById");
-        return new Product()
-        {
-            Id = productId
-        };
+        return OrderFakerGenerator.ProductFaker;
     }
 }
