@@ -17,7 +17,7 @@ public class PagSeguroAdapter : IPaymentGateway
         try
         {
             var filename = _pagSeguroService.GenerateFile();
-            var fileSend = _pagSeguroService.SendFile(amount + 100); // valor deve ser em centavos
+            var fileSend = _pagSeguroService.SendFile(amount * 100); // valor deve ser em centavos
 
             return new PaymentGatewayResponse
             {
