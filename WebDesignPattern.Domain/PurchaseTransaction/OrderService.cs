@@ -80,7 +80,7 @@ public class OrderService : IOrderService
 
         // Aplica o desconto e finaliza o pedido
         order.Discount = totalDiscount;
-        order.Status = OrderStatus.AwaitingPayment;
+        order.FinalizeOrder(); // Delega para o estado atual
 
         // Registra detalhes dos descontos aplicados
         order.DiscountDetail = new DiscountDetail
@@ -121,80 +121,7 @@ public class OrderService : IOrderService
     {
         try
         {
-            // Cria a entidade Payment antes de processar
-            var payment = new Payment
-            {
-                OrderId = order.Id,
-                Amount = order.TotalAmount,
-                PaymentMethod = paymentMethodId,
-                Status = PaymentStatus.Pending
-            };
-
-            // Factory Pattern - para selecionar o gateway (adapter) correto
-            var paymentGateway = _paymentGatewayFactory.Create(paymentMethodId);
-
-            // Adapter Pattern - Interface IPaymentGateway é implementada por adaptadores
-            var paymentGatewayResponse = paymentGateway.ProcessPayment(order.TotalAmount);
-
-            /* 
-            ---------------------------------------------
-            Utilizando adapter diretamente
-            ---------------------------------------------
-            IPaymentGateway paymentGateway = null;
-            if (paymentMethodId == 1)
-            {
-                paymentGateway = new PagSeguroAdapter(_provider.GetRequiredService<PagSeguroService>());
-            }
-            else if (paymentMethodId == 2)
-            {
-                paymentGateway = new PayPalAdapter(_provider.GetRequiredService<PayPalApi>());
-            }
-            */
-
-
-            // Atualiza a entidade Payment com a resposta
-            payment.TransactionId = paymentGatewayResponse.GatewayTransactionId;
-            payment.GatewayResponse = paymentGatewayResponse.RawResponse;
-            payment.Status = paymentGatewayResponse.IsSuccess ? PaymentStatus.Approved : PaymentStatus.Declined;
-            payment.ErrorMessage = paymentGatewayResponse.ErrorMessage;
-
-            if (paymentGatewayResponse.IsSuccess)
-            {
-                // Observer Pattern - Poderia notificar outros sistemas aqui (APRESENTAÇÃO 3)
-                // order.MarkAsPaid(payment.TransactionId);
-                order.Status = OrderStatus.PaymentApproved; // Muda para "em preparação"
-
-                // Salva tanto o pedido quanto o pagamento
-                _paymentRepository.Add(payment);
-                _orderRepository.Update(order);
-
-                // Retorna resultado positivo
-                return new PaymentResult
-                {
-                    Success = true,
-                    PaymentId = payment.Id,
-                    TransactionId = payment.TransactionId,
-                    Amount = payment.Amount,
-                    PaymentDate = payment.PaymentDate,
-                    PaymentMethod = paymentMethodId,
-                    Status = "Aprovado",
-                    NextStep = order.Status // Retorna o novo status do pedido
-                };
-            }
-            else
-            {
-                // Salva o pagamento mesmo falhado para histórico
-                _paymentRepository.Add(payment);
-
-                return new PaymentResult
-                {
-                    Success = false,
-                    PaymentId = payment.Id,
-                    Status = "Recusado",
-                    ErrorMessage = paymentGatewayResponse.ErrorMessage,
-                    NextStep = OrderStatus.PaymentFailed
-                };
-            }
+            return order.MakePayment(paymentMethodId, _paymentGatewayFactory, _paymentRepository);
         }
         catch (Exception ex)
         {

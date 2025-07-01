@@ -3,6 +3,7 @@ using WebDesignPattern.Domain.CustomerRelationshipManagement;
 using WebDesignPattern.Domain.InventoryManagement;
 using WebDesignPattern.Domain.PurchaseTransaction;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.States;
 namespace WebDesignPattern.Infra.Data;
 
 internal static class OrderFakerGenerator
@@ -44,8 +45,8 @@ internal static class OrderFakerGenerator
         {
             Id = new Random().Next(1, 10000),
             CustomerId = customer.Id,
-            Status = OrderStatus.Pending
         };
+        order.SetState(new AwaitingPaymentState()); // Define o estado inicial do pedido
 
         var payments = PaymentFaker.Generate(2);
         foreach (var payment in payments)
