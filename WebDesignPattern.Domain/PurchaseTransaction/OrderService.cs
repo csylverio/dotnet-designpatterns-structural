@@ -2,6 +2,7 @@ using System;
 using WebDesignPattern.Domain.PurchaseTransaction.Discount;
 using WebDesignPattern.Domain.PurchaseTransaction.Discount.Rules;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
 
 namespace WebDesignPattern.Domain.PurchaseTransaction;
 
@@ -12,16 +13,18 @@ public class OrderService : IOrderService
     private readonly IPaymentGatewayFactory _paymentGatewayFactory;
     private readonly IDiscountConfiguration _discountConfiguration;
     private readonly IAccountingService _accountingService;
+    private readonly ShippingServiceContext _shippingServiceContext;
 
     public OrderService(IOrderRepository orderRepository, IPaymentRepository paymentRepository,
         IPaymentGatewayFactory paymentGatewayFactory, IDiscountConfiguration discountConfiguration,
-        IAccountingService accountingService)
+        IAccountingService accountingService, ShippingServiceContext shippingServiceContext)
     {
         _orderRepository = orderRepository;
         _paymentRepository = paymentRepository;
         _paymentGatewayFactory = paymentGatewayFactory;
         _discountConfiguration = discountConfiguration;
         _accountingService = accountingService;
+        _shippingServiceContext = shippingServiceContext;
     }
 
     public Order GetById(int orderId)
@@ -106,7 +109,7 @@ public class OrderService : IOrderService
         {
             // Pode-se optar por lançar exceção ou apenas registrar o erro
             order.AccountingStatus = AccountingStatus.Error;
-            order.AccountingMessage = accountingResult.Message;            
+            order.AccountingMessage = accountingResult.Message;
         }
 
         // --------------------------------------------------------------
@@ -117,11 +120,23 @@ public class OrderService : IOrderService
         return order;
     }
 
+    public Order Ship(Order order, int ShippingMethodId)
+    {
+        order.ShippingMethodId = ShippingMethodId;
+        order.Ship(_shippingServiceContext); // Delega para o estado atual
+
+        _orderRepository.Update(order);
+        return order;
+    }
+
     public PaymentResult MakePayment(Order order, int paymentMethodId)
     {
         try
         {
-            return order.MakePayment(paymentMethodId, _paymentGatewayFactory, _paymentRepository);
+            PaymentResult paymentResult = order.MakePayment(paymentMethodId, _paymentGatewayFactory, _paymentRepository);
+            
+            _orderRepository.Update(order);
+             return paymentResult;
         }
         catch (Exception ex)
         {

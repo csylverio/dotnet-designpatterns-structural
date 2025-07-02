@@ -46,7 +46,7 @@ internal static class OrderFakerGenerator
             Id = new Random().Next(1, 10000),
             CustomerId = customer.Id,
         };
-        order.SetState(new AwaitingPaymentState()); // Define o estado inicial do pedido
+        order.SetState(new DraftState()); // Define o estado inicial do pedido
 
         var payments = PaymentFaker.Generate(2);
         foreach (var payment in payments)

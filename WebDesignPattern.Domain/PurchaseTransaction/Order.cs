@@ -2,6 +2,7 @@ using System;
 using WebDesignPattern.Domain.CustomerRelationshipManagement;
 using WebDesignPattern.Domain.PurchaseTransaction.Discount;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
 using WebDesignPattern.Domain.PurchaseTransaction.States;
 
 namespace WebDesignPattern.Domain.PurchaseTransaction;
@@ -57,7 +58,14 @@ public class Order
     public PaymentResult MakePayment(int paymentMethodId, IPaymentGatewayFactory gatewayFactory, IPaymentRepository paymentRepository) =>
         _state.Pay(this, paymentMethodId, gatewayFactory, paymentRepository); // PaymentApproved
 
-    public void Ship() => _state.Ship(this); // Shipped
+    public void Ship(ShippingServiceContext shippingServiceContext) => _state.Ship(this, shippingServiceContext); // Shipped
     public void Deliver() => _state.Deliver(this); // Delivered
     public void Cancel() => _state.Cancel(this); // Cancelled
+
+
+    // -----------------------------------------------------
+    // Exemplo de uso do padrão Strategy
+    // -----------------------------------------------------
+    public int ShippingMethodId { get; set; }
+    public ShippingResult ShippingResult { get; set; }  
 }

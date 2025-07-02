@@ -1,5 +1,6 @@
 using System;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
 
 namespace WebDesignPattern.Domain.PurchaseTransaction.States;
 
@@ -75,7 +76,7 @@ public class AwaitingPaymentState : IOrderState
         }
     }
 
-    public void Ship(Order order)
+    public void Ship(Order order, ShippingServiceContext shippingServiceContext)
         => throw new InvalidOperationException("Pedido não pago. Pague antes de enviar.");
 
     public void Deliver(Order order)

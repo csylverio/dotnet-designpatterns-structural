@@ -8,4 +8,5 @@ public interface IOrderService
     Order Create(Order order);
     PaymentResult MakePayment(Order order, int paymentMethodId);
     Order FinalizeOrder(Order order, string? couponCode);
+    Order Ship(Order order, int ShippingMethodId);
 }

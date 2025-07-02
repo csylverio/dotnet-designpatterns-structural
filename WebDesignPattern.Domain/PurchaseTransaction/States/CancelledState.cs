@@ -1,5 +1,6 @@
 using System;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
 
 namespace WebDesignPattern.Domain.PurchaseTransaction.States;
 
@@ -13,7 +14,7 @@ public class CancelledState : IOrderState
     public PaymentResult Pay(Order order, int paymentMethodId, IPaymentGatewayFactory gatewayFactory, IPaymentRepository paymentRepository)
         => throw new InvalidOperationException("Pedido cancelado não pode ser pago.");
 
-    public void Ship(Order order) 
+    public void Ship(Order order, ShippingServiceContext shippingServiceContext) 
         => throw new InvalidOperationException("Pedido cancelado não pode ser enviado.");
 
     public void Deliver(Order order) 

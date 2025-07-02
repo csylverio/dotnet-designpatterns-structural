@@ -1,5 +1,6 @@
 using System;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
 
 namespace WebDesignPattern.Domain.PurchaseTransaction.States;
 
@@ -13,7 +14,7 @@ public class DeliveredState : IOrderState
     public PaymentResult Pay(Order order, int paymentMethodId, IPaymentGatewayFactory gatewayFactory, IPaymentRepository paymentRepository)
         => throw new InvalidOperationException("Pedido já pago e entregue.");
 
-    public void Ship(Order order) 
+    public void Ship(Order order, ShippingServiceContext shippingServiceContext) 
         => throw new InvalidOperationException("Pedido já entregue não pode ser reenviado.");
 
     public void Deliver(Order order)

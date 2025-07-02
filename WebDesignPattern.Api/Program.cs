@@ -5,6 +5,7 @@ using WebDesignPattern.Domain.InventoryManagement;
 using WebDesignPattern.Domain.PurchaseTransaction;
 using WebDesignPattern.Domain.PurchaseTransaction.Discount;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
 using WebDesignPattern.Infra.Data;
 using WebDesignPattern.Infra.Financial;
 using WebDesignPattern.Infra.Financial.PagSeguro;
@@ -43,6 +44,11 @@ builder.Services.AddScoped<IAccountingService, SapAccountingFacade>();
 builder.Services.AddScoped<ISapBapiService, SapBapiService>();
 builder.Services.AddScoped<ISapIdocService, SapIdocService>();
 builder.Services.AddScoped<ISapRfcService, SapRfcService>();
+
+builder.Services.AddTransient<IShippingStrategy, StandardShippingStrategy>();
+builder.Services.AddTransient<IShippingStrategy, ExpressShippingStrategy>();
+builder.Services.AddTransient<IShippingStrategy, StorePickupStrategy>();
+builder.Services.AddSingleton<ShippingServiceContext>();
 
 var app = builder.Build();
 

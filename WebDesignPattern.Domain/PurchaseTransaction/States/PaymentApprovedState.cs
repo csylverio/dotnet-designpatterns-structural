@@ -1,5 +1,6 @@
 using System;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
 
 namespace WebDesignPattern.Domain.PurchaseTransaction.States;
 
@@ -13,10 +14,13 @@ public class PaymentApprovedState : IOrderState
     public PaymentResult Pay(Order order, int paymentMethodId, IPaymentGatewayFactory gatewayFactory, IPaymentRepository paymentRepository)
         => throw new InvalidOperationException("Pedido já pago.");
 
-    public void Ship(Order order)
+    public void Ship(Order order, ShippingServiceContext shippingServiceContext)
     {
         Console.WriteLine("Enviando pedido...");
-        order.SetState(new ShippedState());
+
+        order.ShippingResult = shippingServiceContext.ProcessShipping(order);
+
+        order.SetState(new ShippedState()); // Próximo estado
     }
 
     public void Deliver(Order order) 
