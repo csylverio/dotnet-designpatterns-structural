@@ -26,8 +26,8 @@ public class PayPalAdapter : IPaymentGateway
             IsSuccess = response.Status == "OK",
             ErrorMessage = response.Status == "OK" ? "" : "Error processing payment",
             ProcessedAmount = decimal.Parse(response.Value.ToString()),
-            RawResponse = response.Response,
-            ReceiptUrl = response.Url
+            RawResponse = response.Response ?? "",
+            ReceiptUrl = response.Url ?? ""
         };
     }
 }

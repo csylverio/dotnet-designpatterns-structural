@@ -2,14 +2,17 @@ using LibraryExternal.SAP;
 using Microsoft.OpenApi.Models;
 using WebDesignPattern.Domain.CustomerRelationshipManagement;
 using WebDesignPattern.Domain.InventoryManagement;
+using WebDesignPattern.Domain.Notification;
 using WebDesignPattern.Domain.PurchaseTransaction;
 using WebDesignPattern.Domain.PurchaseTransaction.Discount;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.Observers;
 using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
 using WebDesignPattern.Infra.Data;
 using WebDesignPattern.Infra.Financial;
 using WebDesignPattern.Infra.Financial.PagSeguro;
 using WebDesignPattern.Infra.Financial.PayPal;
+using WebDesignPattern.Infra.Notification;
 using WebDesignPattern.Infra.Sap;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +52,36 @@ builder.Services.AddTransient<IShippingStrategy, StandardShippingStrategy>();
 builder.Services.AddTransient<IShippingStrategy, ExpressShippingStrategy>();
 builder.Services.AddTransient<IShippingStrategy, StorePickupStrategy>();
 builder.Services.AddSingleton<ShippingServiceContext>();
+
+
+builder.Services.AddSingleton<IEmailService>(provider => 
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var apiKey = config["SendGrid:ApiKey"] ?? throw new ArgumentNullException("SendGrid:ApiKey", "SendGrid API Key is not configured.");
+    var fromEmail = config["SendGrid:FromEmail"] ?? throw new ArgumentNullException("SendGrid:FromEmail", "SendGrid FromEmail is not configured.");
+    var fromName = config["SendGrid:FromName"] ?? throw new ArgumentNullException("SendGrid:FromName", "SendGrid FromName is not configured.");
+    return new SendGridEmailService(
+        apiKey,
+        fromEmail,
+        fromName
+    );
+});
+builder.Services.AddScoped<INotificationManager, FirebaseNotificationManager>();
+// Registrar os observers com injeção de dependência
+builder.Services.AddScoped<IOrderObserver>(provider => new EmailNotificationService(provider.GetRequiredService<IEmailService>()));
+builder.Services.AddScoped<IOrderObserver>(provider => new InventoryManagementService(provider.GetRequiredService<IProductRepository>()));
+builder.Services.AddScoped<IOrderObserver>(provider => new MobilePushNotificationService(provider.GetRequiredService<INotificationManager>()));
+// Registrar o OrderEventManager e injetar todos os observers
+builder.Services.AddScoped<OrderEventManager>(provider =>
+{
+    var eventManager = new OrderEventManager();
+    var observers = provider.GetServices<IOrderObserver>();
+    foreach (var observer in observers)
+    {
+        eventManager.Subscribe(observer);
+    }
+    return eventManager;
+});
 
 var app = builder.Build();
 

@@ -2,6 +2,7 @@ using System;
 using WebDesignPattern.Domain.PurchaseTransaction.Discount;
 using WebDesignPattern.Domain.PurchaseTransaction.Discount.Rules;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
+using WebDesignPattern.Domain.PurchaseTransaction.Observers;
 using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
 
 namespace WebDesignPattern.Domain.PurchaseTransaction;
@@ -14,10 +15,12 @@ public class OrderService : IOrderService
     private readonly IDiscountConfiguration _discountConfiguration;
     private readonly IAccountingService _accountingService;
     private readonly ShippingServiceContext _shippingServiceContext;
+    private readonly OrderEventManager _eventManager;
 
     public OrderService(IOrderRepository orderRepository, IPaymentRepository paymentRepository,
         IPaymentGatewayFactory paymentGatewayFactory, IDiscountConfiguration discountConfiguration,
-        IAccountingService accountingService, ShippingServiceContext shippingServiceContext)
+        IAccountingService accountingService, ShippingServiceContext shippingServiceContext,
+        OrderEventManager eventManager)
     {
         _orderRepository = orderRepository;
         _paymentRepository = paymentRepository;
@@ -25,6 +28,7 @@ public class OrderService : IOrderService
         _discountConfiguration = discountConfiguration;
         _accountingService = accountingService;
         _shippingServiceContext = shippingServiceContext;
+        _eventManager = eventManager;
     }
 
     public Order GetById(int orderId)
@@ -116,16 +120,8 @@ public class OrderService : IOrderService
         // 3. Atualiza o pedido com detalhes de desconto e status contábil 
         // --------------------------------------------------------------
         _orderRepository.Update(order);
+        _eventManager.Notify(order, OrderEventType.OrderCreated);
 
-        return order;
-    }
-
-    public Order Ship(Order order, int ShippingMethodId)
-    {
-        order.ShippingMethodId = ShippingMethodId;
-        order.Ship(_shippingServiceContext); // Delega para o estado atual
-
-        _orderRepository.Update(order);
         return order;
     }
 
@@ -134,9 +130,16 @@ public class OrderService : IOrderService
         try
         {
             PaymentResult paymentResult = order.MakePayment(paymentMethodId, _paymentGatewayFactory, _paymentRepository);
-            
+
             _orderRepository.Update(order);
-             return paymentResult;
+
+            if (paymentResult.Success)
+                _eventManager.Notify(order, OrderEventType.PaymentApproved);
+            else
+                _eventManager.Notify(order, OrderEventType.PaymentFailed);
+
+
+            return paymentResult;
         }
         catch (Exception ex)
         {
@@ -148,5 +151,17 @@ public class OrderService : IOrderService
                 NextStep = OrderStatus.PaymentError
             };
         }
+    }
+
+    public Order Ship(Order order, int ShippingMethodId)
+    {
+        order.ShippingMethodId = ShippingMethodId;
+        order.Ship(_shippingServiceContext); // Delega para o estado atual
+
+        _orderRepository.Update(order);
+
+        _eventManager.Notify(order, OrderEventType.OrderShipped);
+
+        return order;
     }
 }
