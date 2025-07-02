@@ -26,7 +26,7 @@ public class EmailNotificationService : IOrderObserver
             _ => throw new NotImplementedException($"Evento de notificação não implementado: {eventType}")
         };
 
-        if (subject != null)
+        if (subject != null && order.Customer != null && !string.IsNullOrEmpty(order.Customer.Email))
         {
             string body = $"Olá {order.Customer.Name},\n\nStatus do pedido: {subject}";
             _emailService.SendEmail(order.Customer.Email, subject, body);
