@@ -8,6 +8,7 @@ using WebDesignPattern.Domain.PurchaseTransaction.Discount;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
 using WebDesignPattern.Domain.PurchaseTransaction.Observers;
 using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
+using WebDesignPattern.Domain.PurchaseTransaction.Validators;
 using WebDesignPattern.Infra.Data;
 using WebDesignPattern.Infra.Financial;
 using WebDesignPattern.Infra.Financial.PagSeguro;
@@ -82,6 +83,9 @@ builder.Services.AddScoped<OrderEventManager>(provider =>
     }
     return eventManager;
 });
+
+builder.Services.AddSingleton<IOrderValidator>(_ => OrderValidationChain.BuildChain());
+
 
 var app = builder.Build();
 

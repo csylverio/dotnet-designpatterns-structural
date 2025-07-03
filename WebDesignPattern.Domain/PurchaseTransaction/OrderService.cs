@@ -4,6 +4,7 @@ using WebDesignPattern.Domain.PurchaseTransaction.Discount.Rules;
 using WebDesignPattern.Domain.PurchaseTransaction.Financial;
 using WebDesignPattern.Domain.PurchaseTransaction.Observers;
 using WebDesignPattern.Domain.PurchaseTransaction.Shippings;
+using WebDesignPattern.Domain.PurchaseTransaction.Validators;
 
 namespace WebDesignPattern.Domain.PurchaseTransaction;
 
@@ -16,11 +17,12 @@ public class OrderService : IOrderService
     private readonly IAccountingService _accountingService;
     private readonly ShippingServiceContext _shippingServiceContext;
     private readonly OrderEventManager _eventManager;
+    private readonly IOrderValidator _validator;
 
     public OrderService(IOrderRepository orderRepository, IPaymentRepository paymentRepository,
         IPaymentGatewayFactory paymentGatewayFactory, IDiscountConfiguration discountConfiguration,
         IAccountingService accountingService, ShippingServiceContext shippingServiceContext,
-        OrderEventManager eventManager)
+        OrderEventManager eventManager, IOrderValidator validator)
     {
         _orderRepository = orderRepository;
         _paymentRepository = paymentRepository;
@@ -29,6 +31,7 @@ public class OrderService : IOrderService
         _accountingService = accountingService;
         _shippingServiceContext = shippingServiceContext;
         _eventManager = eventManager;
+        _validator = validator;
     }
 
     public Order GetById(int orderId)
@@ -45,6 +48,7 @@ public class OrderService : IOrderService
 
     public Order FinalizeOrder(Order order, string? couponCode = null)
     {
+
         // --------------------------------------------------------------
         // 1. Processa Desconto na plataforma utilizando composite
         // --------------------------------------------------------------
@@ -156,6 +160,13 @@ public class OrderService : IOrderService
     public Order Ship(Order order, int ShippingMethodId)
     {
         order.ShippingMethodId = ShippingMethodId;
+        // --------------------------------------------------------------
+        //  Exemplo de Validação de Pedido usando Chain of Responsibility
+        // --------------------------------------------------------------
+        var validationResult = _validator.Validate(order);
+        if (!validationResult.IsValid)
+            throw new InvalidOperationException(validationResult.ErrorMessage);
+
         order.Ship(_shippingServiceContext); // Delega para o estado atual
 
         _orderRepository.Update(order);
